@@ -2,22 +2,23 @@
 
 from __future__ import division, print_function
 
+import os, glob
+import argparse
+
 import tensorflow as tf
 import numpy as np
-import argparse
 import cv2
-import time
 
-from utils.misc_utils import parse_anchors, read_class_names
-from utils.nms_utils import gpu_nms
-from utils.plot_utils import get_color_table, plot_one_box
-from utils.data_aug import letterbox_resize
+from .utils.misc_utils import parse_anchors, read_class_names
+from .utils.nms_utils import gpu_nms
+from .utils.plot_utils import get_color_table, plot_one_box
+from .utils.data_aug import letterbox_resize
 
-from model import yolov3
+from .model import yolov3
 
-parser = argparse.ArgumentParser(description="YOLO-V3 video test procedure.")
-parser.add_argument("input_video", type=str,
-                    help="The path of the input video.")
+parser = argparse.ArgumentParser(description="YOLO-V3 test single image test procedure.")
+parser.add_argument("input_pattern", type=str, help="The pattern for input images.")
+parser.add_argument("output_dir", type=str, help="The directory of output images.")
 parser.add_argument("--anchor_path", type=str, default="./data/yolo_anchors.txt",
                     help="The path of the anchor txt file.")
 parser.add_argument("--new_size", nargs='*', type=int, default=[416, 416],
@@ -28,8 +29,6 @@ parser.add_argument("--class_name_path", type=str, default="./data/coco.names",
                     help="The path of the class names.")
 parser.add_argument("--restore_path", type=str, default="./data/darknet_weights/yolov3.ckpt",
                     help="The path of the weights to restore.")
-parser.add_argument("--save_video", type=lambda x: (str(x).lower() == 'true'), default=False,
-                    help="Whether to save the video detection results.")
 args = parser.parse_args()
 
 args.anchors = parse_anchors(args.anchor_path)
@@ -37,16 +36,6 @@ args.classes = read_class_names(args.class_name_path)
 args.num_class = len(args.classes)
 
 color_table = get_color_table(args.num_class)
-
-vid = cv2.VideoCapture(args.input_video)
-video_frame_cnt = int(vid.get(7))
-video_width = int(vid.get(3))
-video_height = int(vid.get(4))
-video_fps = int(vid.get(5))
-
-if args.save_video:
-    fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
-    videoWriter = cv2.VideoWriter('video_result.mp4', fourcc, video_fps, (video_width, video_height))
 
 with tf.Session() as sess:
     input_data = tf.placeholder(tf.float32, [1, args.new_size[1], args.new_size[0], 3], name='input_data')
@@ -62,8 +51,9 @@ with tf.Session() as sess:
     saver = tf.train.Saver()
     saver.restore(sess, args.restore_path)
 
-    for i in range(video_frame_cnt):
-        ret, img_ori = vid.read()
+    img_paths = glob.glob(args.input_pattern)
+    for img_path in img_paths:
+        img_ori = cv2.imread(img_path)
         if args.letterbox_resize:
             img, resize_ratio, dw, dh = letterbox_resize(img_ori, args.new_size[0], args.new_size[1])
         else:
@@ -72,10 +62,7 @@ with tf.Session() as sess:
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         img = np.asarray(img, np.float32)
         img = img[np.newaxis, :] / 255.
-
-        start_time = time.time()
         boxes_, scores_, labels_ = sess.run([boxes, scores, labels], feed_dict={input_data: img})
-        end_time = time.time()
 
         # rescale the coordinates to the original image
         if args.letterbox_resize:
@@ -85,18 +72,19 @@ with tf.Session() as sess:
             boxes_[:, [0, 2]] *= (width_ori/float(args.new_size[0]))
             boxes_[:, [1, 3]] *= (height_ori/float(args.new_size[1]))
 
+        print("box coords:")
+        print(boxes_)
+        print('*' * 30)
+        print("scores:")
+        print(scores_)
+        print('*' * 30)
+        print("labels:")
+        print(labels_)
 
         for i in range(len(boxes_)):
             x0, y0, x1, y1 = boxes_[i]
             plot_one_box(img_ori, [x0, y0, x1, y1], label=args.classes[labels_[i]] + ', {:.2f}%'.format(scores_[i] * 100), color=color_table[labels_[i]])
-        cv2.putText(img_ori, '{:.2f}ms'.format((end_time - start_time) * 1000), (40, 40), 0,
-                    fontScale=1, color=(0, 255, 0), thickness=2)
-        cv2.imshow('image', img_ori)
-        if args.save_video:
-            videoWriter.write(img_ori)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-
-    vid.release()
-    if args.save_video:
-        videoWriter.release()
+        img_name = os.path.splitext(os.path.basename(img_path))[0]
+        output_path = os.path.join(args.output_dir, '{}.jpg'.format(img_name))
+        cv2.imwrite(output_path, img_ori)
+        print('Saved {}'.format(output_path))

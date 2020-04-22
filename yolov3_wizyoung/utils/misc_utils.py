@@ -1,8 +1,9 @@
 # coding: utf-8
 
+import random
+
 import numpy as np
 import tensorflow as tf
-import random
 
 from tensorflow.core.framework import summary_pb2
 

@@ -2,11 +2,13 @@
 
 from __future__ import division, print_function
 
+import sys
+import random
+
 import numpy as np
 import cv2
-import sys
-from utils.data_aug import *
-import random
+
+from .data_aug import *
 
 PY_VERSION = sys.version_info[0]
 iter_cnt = 0

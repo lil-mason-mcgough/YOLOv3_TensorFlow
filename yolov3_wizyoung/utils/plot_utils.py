@@ -2,8 +2,9 @@
 
 from __future__ import division, print_function
 
-import cv2
 import random
+
+import cv2
 
 
 def get_color_table(class_num, seed=2):

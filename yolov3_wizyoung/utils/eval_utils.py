@@ -2,12 +2,13 @@
 
 from __future__ import division, print_function
 
-import numpy as np
-import cv2
 from collections import Counter
 
-from utils.nms_utils import cpu_nms, gpu_nms
-from utils.data_utils import parse_line
+import numpy as np
+import cv2
+
+from .nms_utils import cpu_nms, gpu_nms
+from .data_utils import parse_line
 
 
 def calc_iou(pred_boxes, true_boxes):
@@ -233,6 +234,11 @@ def evaluate_on_gpu(sess, gpu_nms_op, pred_boxes_flag, pred_scores_flag, y_pred,
     else:
         return true_positive_dict, true_labels_dict, pred_labels_dict
 
+def calc_recall(true_positive_dict, true_labels_dict):
+    return sum(true_positive_dict.values()) / (sum(true_labels_dict.values()) + 1e-6)
+
+def calc_precision(true_positive_dict, pred_labels_dict):
+    return sum(true_positive_dict.values()) / (sum(pred_labels_dict.values()) + 1e-6)
 
 def get_preds_gpu(sess, gpu_nms_op, pred_boxes_flag, pred_scores_flag, image_ids, y_pred):
     '''

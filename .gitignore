@@ -62,3 +62,14 @@ __pycache__/
 
 # darknet
 *.weights
+
+# checkpoint files
+*checkpoint
+*.ckpt*
+
+# distutils
+MANIFEST
+
+# notes
+notes.txt
+TODO.md

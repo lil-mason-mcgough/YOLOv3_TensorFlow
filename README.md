@@ -1,4 +1,86 @@
-#  YOLOv3_TensorFlow
+# YOLOv3-WizYoung
+
+## Introduction
+
+This repo is a refactor of the [YOLOv3 implementation](https://github.com/wizyoung/YOLOv3_TensorFlow) by GitHub user [wizyoung](https://github.com/wizyoung/). It has been restructured to be deployable with `setuptools` and some additional scripts and modules have been added.
+
+## Installation
+
+Setup has been slightly simplified from the original project. Simply install it to the python environment using `pip`:
+
+```
+cd yolov3_wizyoung
+pip install .
+```
+
+The package can then be imported:
+
+```
+import yolov3_wizyoung
+```
+
+## Usage
+
+Unlike the original package which used `args.py` for training configuration parameters, this one relies on a YAML file. This decouples project configuration from package implementation, making it simpler to manage multiple YAML files for various datasets / configurations and preventing application-specific configuration from entering version control. 
+
+### Generate data annotations
+
+Data needs to be consumable in a specific format to be used by this project. That format is described in section 7.1 of the original documentation (below). Several helper scripts are in yolov3_wizyoung to help with various formats.
+
+### Generate anchors
+
+When using your own data for YOLO, you probably want to generate your own anchors. This can be done using the following code, converting literals to reflect your project:
+
+```
+from yolov3_wizyoung.get_kmeans import parse_anno, get_kmeans
+
+train_path = './data/train.txt'
+n_anchors = 9
+img_size = [416, 416]
+
+anno_result = parse_anno(train_path, target_size=img_size)
+anchors, avg_iou = get_kmeans(anno_result, n_anchors)
+print(anchors)
+```
+
+Copy the anchors as they appear in the console into `config.yaml` under the line `anchors: ...`.
+
+### Download Darknet weights
+
+The Darknet weights can be downloaded [here](https://pjreddie.com/media/files/yolov3.weights). After doing so, they need to be converted into a checkpoint file for TensorFlow to consume. Execute the following code, converting literals to reflect your project structure:
+
+```
+from yolov3_wizyoung import convert_weight
+
+anchors = <replace with anchors in previous section>
+
+convert_weight(
+    './yolov3.weights', 
+    './yolov3.ckpt',
+    [416, 416] # input image dimensions,
+    anchors)
+```
+
+### Edit config
+
+Some parameters in `config.yaml` need to be modified to use this project. At minimum the first paragraph of parameters need to reflect your project. 
+
+To run a training session using your own configurations, modify `config.yaml` and then use the following example:
+
+```
+from yolov3_wizyoung.train import train
+from yolov3_wizyoung.utils.config_utils import YoloArgs
+
+config_file = 'config.yaml'
+args = YoloArgs(config_file)
+train(args)
+```
+
+## Additional notes
+
+For more information, the original documentation can be found below:
+
+## (ORIGINAL DOCUMENTATION) YOLOv3_TensorFlow  
 
 ### 1. Introduction
 
