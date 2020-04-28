@@ -9,7 +9,6 @@ This repo is a refactor of the [YOLOv3 implementation](https://github.com/wizyou
 Setup has been slightly simplified from the original project. Simply install it to the python environment using `pip`:
 
 ```
-cd yolov3_wizyoung
 pip install .
 ```
 
