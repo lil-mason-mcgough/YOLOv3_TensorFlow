@@ -8,7 +8,7 @@ from yolov3_wizyoung.utils.config_utils import YoloArgs
 def make_dir_exist(dirname):
     try:
         os.makedirs(dirname)
-    except OSError:
+    except (OSError, FileExistsError):
         pass
 
 def gsutil_rsync(src_dir, dst_dir):
@@ -39,14 +39,14 @@ if __name__ == '__main__':
     parsed_args = parser.parse_args()
 
     output_model_dir = 'output_model'
-    os.makedirs(output_model_dir)
+    make_dir_exist(output_model_dir)
 
     # download data and pretrained model from GCS
-    os.makedirs(parsed_args.data_dl_dir)
+    make_dir_exist(parsed_args.data_dl_dir)
     gsutil_rsync(
         os.path.join('gs://' + parsed_args.bucket_name, parsed_args.data_prefix), 
         parsed_args.data_dl_dir)
-    os.makedirs(parsed_args.model_dl_dir)
+    make_dir_exist(parsed_args.model_dl_dir)
     gsutil_rsync(
         os.path.join('gs://' + parsed_args.bucket_name, parsed_args.model_prefix), 
         parsed_args.model_dl_dir)
