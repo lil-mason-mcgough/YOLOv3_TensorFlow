@@ -6,7 +6,7 @@ REQUIRED_PACKAGES = [
     'Pillow>=5.1.0',
     'pytz>=2019.3',
     'pyyaml>=5.3.1',
-    'tensorflow-gpu>=1.15.0',
+    'tensorflow-gpu>=1.15.0,<2.0.0',
     'tqdm>=4.43.0',
     'requests>=2.23.0',
 ]
