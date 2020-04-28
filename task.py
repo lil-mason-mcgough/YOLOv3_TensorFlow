@@ -1,10 +1,8 @@
 import os
 import subprocess
 
-# from google.cloud import storage
-
 from yolov3_wizyoung.train import train
-from yolov3_wizyoung.convert_labels import convert_kitti_data_to_yolo
+from yolov3_wizyoung.labels.convert_labels import convert_kitti_data_to_yolo
 from yolov3_wizyoung.utils.config_utils import YoloArgs
 
 def make_dir_exist(dirname):
@@ -20,15 +18,6 @@ def gsutil_rsync(src_dir, dst_dir):
     print(process.stdout)
     return process
 
-# def download_folder_from_gcs(bucket_name, prefix, output_dir):
-#     storage_client = storage.Client()
-#     bucket = storage_client.get_bucket(bucket_name)
-#     blobs = bucket.list_blobs(prefix=prefix)  # Get list of files
-#     for blob in blobs:
-#         file_path = os.path.join(output_dir, os.path.relpath(blob.name, prefix))
-#         dirname = os.path.dirname(file_path)
-#         make_dir_exist(dirname)
-#         blob.download_to_filename(file_path)
 
 if __name__ == '__main__':
     import argparse
@@ -73,13 +62,6 @@ if __name__ == '__main__':
         data_subsets=data_subsets)
 
     # adapt some yolo_args attributes to cloud
-    yolo_args.train_file = os.path.join(parsed_args.data_dl_dir, os.path.basename(yolo_args.train_file))
-    yolo_args.val_file = os.path.join(parsed_args.data_dl_dir, os.path.basename(yolo_args.val_file))
-    yolo_args.restore_path = os.path.join(parsed_args.model_dl_dir, os.path.basename(yolo_args.restore_path))
-    yolo_args.save_dir = os.path.join(output_model_dir, 'checkpoint')
-    yolo_args.log_dir = os.path.join(output_model_dir, 'logs')
-    yolo_args.progress_log_path = os.path.join(yolo_args.log_dir, os.path.basename(yolo_args.progress_log_path))
-    yolo_args.class_name_path = os.path.join(parsed_args.data_dl_dir, os.path.basename(yolo_args.class_name_path))
     make_dir_exist(yolo_args.save_dir)
     make_dir_exist(yolo_args.log_dir)
 
