@@ -12,8 +12,12 @@ def make_dir_exist(dirname):
         pass
 
 def gsutil_rsync(src_dir, dst_dir):
-    process = subprocess.run(['gsutil', '-m', 'rsync', '-r', src_dir, dst_dir], 
-                         stdout=subprocess.PIPE, 
+    command = ['gsutil', '-m', 'rsync', '-r', src_dir, dst_dir]
+    print('Executing command:')
+    print(' '.join(command))
+
+    process = subprocess.run(command,
+                         stdout=subprocess.PIPE,
                          universal_newlines=True)
     print(process.stdout)
     return process
@@ -38,9 +42,6 @@ if __name__ == '__main__':
                     help="The the local directory to save model data.")
     parsed_args = parser.parse_args()
 
-    output_model_dir = 'output_model'
-    make_dir_exist(output_model_dir)
-
     # download data and pretrained model from GCS
     make_dir_exist(parsed_args.data_dl_dir)
     gsutil_rsync(
@@ -54,10 +55,10 @@ if __name__ == '__main__':
     # generate new training paths from data
     data_subsets = {'training': 'train', 'validation': 'val', 'testing_real': 'test'}
     convert_kitti_data_to_yolo(
-        parsed_args.data_dl_dir, 
-        parsed_args.data_dl_dir, 
+        parsed_args.data_dl_dir,
+        parsed_args.data_dl_dir,
         data_subsets=data_subsets)
-    
+
     # load configs
     yolo_args = YoloArgs(parsed_args.config_file)
 
@@ -69,4 +70,5 @@ if __name__ == '__main__':
     train(yolo_args)
     if parsed_args.job_dir == '':
         parsed_args.job_dir = 'gs://{}'.format(parsed_args.bucket_name)
-    gsutil_rsync(output_model_dir, parsed_args.job_dir)
+    gsutil_rsync(yolo_args.save_dir, parsed_args.job_dir)
+    gsutil_rsync(yolo_args.log_dir, parsed_args.job_dir)
