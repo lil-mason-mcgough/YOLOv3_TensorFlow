@@ -6,10 +6,7 @@ from yolov3_wizyoung.labels.convert_labels import convert_kitti_data_to_yolo
 from yolov3_wizyoung.utils.config_utils import YoloArgs
 
 def make_dir_exist(dirname):
-    try:
-        os.makedirs(dirname)
-    except (OSError, FileExistsError):
-        pass
+    os.makedirs(dirname, exist_ok=True)
 
 def gsutil_rsync(src_dir, dst_dir):
     process = subprocess.run(['gsutil', '-m', 'rsync', '-r', src_dir, dst_dir], 
@@ -50,9 +47,6 @@ if __name__ == '__main__':
     gsutil_rsync(
         os.path.join('gs://' + parsed_args.bucket_name, parsed_args.model_prefix), 
         parsed_args.model_dl_dir)
-    
-    # load configs
-    yolo_args = YoloArgs(parsed_args.config_file)
 
     # generate new training paths from data
     data_subsets = {'training': 'train', 'validation': 'val', 'testing_real': 'test'}
@@ -60,6 +54,9 @@ if __name__ == '__main__':
         parsed_args.data_dl_dir, 
         parsed_args.data_dl_dir, 
         data_subsets=data_subsets)
+    
+    # load configs
+    yolo_args = YoloArgs(parsed_args.config_file)
 
     # adapt some yolo_args attributes to cloud
     make_dir_exist(yolo_args.save_dir)
