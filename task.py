@@ -6,7 +6,10 @@ from yolov3_wizyoung.labels.convert_labels import convert_kitti_data_to_yolo
 from yolov3_wizyoung.utils.config_utils import YoloArgs
 
 def make_dir_exist(dirname):
-    os.makedirs(dirname, exist_ok=True)
+    try:
+        os.makedirs(dirname)
+    except (OSError, FileExistsError):
+        pass
 
 def gsutil_rsync(src_dir, dst_dir):
     process = subprocess.run(['gsutil', '-m', 'rsync', '-r', src_dir, dst_dir], 
