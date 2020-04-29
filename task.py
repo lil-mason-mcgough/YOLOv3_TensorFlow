@@ -2,7 +2,7 @@ import os
 import subprocess
 
 from yolov3_wizyoung.train import train
-from yolov3_wizyoung.labels.convert_labels import convert_kitti_data_to_yolo
+from yolov3_wizyoung.labels.convert_labels import convert_kitti_data_to_yolo, convert_makesense_data_to_yolo
 from yolov3_wizyoung.utils.config_utils import YoloArgs
 
 def make_dir_exist(dirname):
@@ -40,6 +40,8 @@ if __name__ == '__main__':
                     help="The path to bucket model dir relative to the bucket root.")
     parser.add_argument("--model_dl_dir", type=str, default="./app_model",
                     help="The the local directory to save model data.")
+    parser.add_argument("--use_real_train_data", type=bool, default=False,
+                    help="If True, add real training data in training_syn_+_real folder.")
     parsed_args = parser.parse_args()
 
     # download data and pretrained model from GCS
@@ -53,7 +55,7 @@ if __name__ == '__main__':
         parsed_args.model_dl_dir)
 
     # generate new training paths from data
-    data_subsets = {'training': 'train', 'validation': 'val', 'testing_real': 'test'}
+    data_subsets = {'training_syn_+_real': 'train', 'validation': 'val', 'testing_real_half': 'test'}
     convert_kitti_data_to_yolo(
         parsed_args.data_dl_dir,
         parsed_args.data_dl_dir,
@@ -61,6 +63,19 @@ if __name__ == '__main__':
 
     # load configs
     yolo_args = YoloArgs(parsed_args.config_file)
+
+    # append real training imgs to list
+    if parsed_args.use_real_train_data:
+        syn_data_path = os.path.join(parsed_args.data_dl_dir, 'train_syn.txt')
+        convert_makesense_data_to_yolo(
+            os.path.join(parsed_args.data_dl_dir, 'training_syn_+_real', 'makesense_images'), 
+            os.path.join(parsed_args.data_dl_dir, 'training_syn_+_real', 'makesense_labels'), 
+            yolo_args.classes, 
+            syn_data_path)
+        with open(os.path.join(parsed_args.data_dl_dir, 'train.txt'), 'a') as f_out:
+            with open(syn_data_path, 'r') as f_in:
+                for l_in in f_in:
+                    f_out.write(l_in)
 
     # adapt some yolo_args attributes to cloud
     make_dir_exist(yolo_args.save_dir)
