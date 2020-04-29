@@ -7,12 +7,13 @@ import numpy as np
 import argparse
 from tqdm import trange
 
-from .utils.data_utils import get_batch_data
-from .utils.misc_utils import parse_anchors, read_class_names, AverageMeter
-from .utils.eval_utils import evaluate_on_cpu, evaluate_on_gpu, get_preds_gpu, voc_eval, parse_gt_rec
-from .utils.nms_utils import gpu_nms
+from yolov3_wizyoung.utils.data_utils import get_batch_data
+from yolov3_wizyoung.utils.misc_utils import parse_anchors, read_class_names, AverageMeter
+from yolov3_wizyoung.utils.eval_utils import evaluate_on_cpu, evaluate_on_gpu, get_preds_gpu, voc_eval, parse_gt_rec
+from yolov3_wizyoung.utils.nms_utils import gpu_nms
+from yolov3_wizyoung.utils.config_utils import YoloArgs
 
-from .model import yolov3
+from yolov3_wizyoung.model import yolov3
 
 #################
 # ArgumentParser
@@ -25,11 +26,8 @@ parser.add_argument("--eval_file", type=str, default="./data/my_data/val.txt",
 parser.add_argument("--restore_path", type=str, default="./data/darknet_weights/yolov3.ckpt",
                     help="The path of the weights to restore.")
 
-parser.add_argument("--anchor_path", type=str, default="./data/yolo_anchors.txt",
-                    help="The path of the anchor txt file.")
-
-parser.add_argument("--class_name_path", type=str, default="./data/coco.names",
-                    help="The path of the class names.")
+parser.add_argument("--config_path", type=str, default="./config.yaml",
+                    help="The path of the config file.")
 
 # some numbers
 parser.add_argument("--img_size", nargs='*', type=int, default=[416, 416],
@@ -59,8 +57,9 @@ parser.add_argument("--use_voc_07_metric", type=lambda x: (str(x).lower() == 'tr
 args = parser.parse_args()
 
 # args params
-args.anchors = parse_anchors(args.anchor_path)
-args.classes = read_class_names(args.class_name_path)
+yolo_args = YoloArgs(args.config_path)
+args.anchors = yolo_args.anchors
+args.classes = yolo_args.classes
 args.class_num = len(args.classes)
 args.img_cnt = len(open(args.eval_file, 'r').readlines())
 
