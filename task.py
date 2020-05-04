@@ -1,4 +1,4 @@
-import os
+import os, shutil
 import subprocess
 
 from yolov3_wizyoung.train import train
@@ -9,6 +9,12 @@ def make_dir_exist(dirname):
     try:
         os.makedirs(dirname)
     except (OSError, FileExistsError):
+        pass
+
+def make_dir_not_exist(dirname):
+    try:
+        shutil.rmtree(dirname)
+    except FileNotFoundError:
         pass
 
 def gsutil_rsync(src_dir, dst_dir):
@@ -44,6 +50,9 @@ if __name__ == '__main__':
                     help="If True, add real training data in training_syn_+_real folder.")
     parsed_args = parser.parse_args()
 
+    # load configs
+    yolo_args = YoloArgs(parsed_args.config_file)
+
     # download data and pretrained model from GCS
     make_dir_exist(parsed_args.data_dl_dir)
     gsutil_rsync(
@@ -55,14 +64,18 @@ if __name__ == '__main__':
         parsed_args.model_dl_dir)
 
     # generate new training paths from data
-    data_subsets = {'training_syn_+_real': 'train', 'validation': 'val', 'testing_real_half': 'test'}
+    data_subsets = {'training_syn_+_real': 'train', 'validation': 'val'}
     convert_kitti_data_to_yolo(
         parsed_args.data_dl_dir,
         parsed_args.data_dl_dir,
         data_subsets=data_subsets)
 
-    # load configs
-    yolo_args = YoloArgs(parsed_args.config_file)
+    # generate test data
+    convert_makesense_data_to_yolo(
+        os.path.join(parsed_args.data_dl_dir, 'testing_real_half', 'image_2'),
+        os.path.join(parsed_args.data_dl_dir, 'testing_real_half', 'labels_dewalt_escondido_subset'),
+        yolo_args.classes,
+        os.path.join(parsed_args.data_dl_dir, 'test.txt'))
 
     # append real training imgs to list
     if parsed_args.use_real_train_data:
@@ -77,13 +90,15 @@ if __name__ == '__main__':
                 for l_in in f_in:
                     f_out.write(l_in)
 
-    # adapt some yolo_args attributes to cloud
+    # reset checkpoint and logs dirs
+    make_dir_not_exist(yolo_args.save_dir)
     make_dir_exist(yolo_args.save_dir)
+    make_dir_not_exist(yolo_args.log_dir)
     make_dir_exist(yolo_args.log_dir)
 
     # train model
     train(yolo_args)
     if parsed_args.job_dir == '':
         parsed_args.job_dir = 'gs://{}'.format(parsed_args.bucket_name)
-    gsutil_rsync(yolo_args.save_dir, parsed_args.job_dir)
-    gsutil_rsync(yolo_args.log_dir, parsed_args.job_dir)
+    gsutil_rsync(yolo_args.save_dir, os.path.join(parsed_args.job_dir, 'checkpoint'))
+    gsutil_rsync(yolo_args.log_dir, os.path.join(parsed_args.job_dir, 'logs'))
