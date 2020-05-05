@@ -1,10 +1,11 @@
 import os
 import copy
+import multiprocessing
 
 import yaml
 from yolov3_wizyoung.train import train
 from yolov3_wizyoung.utils.config_utils import YoloArgs
-from yolov3_wizyoung.utils.misc_utils import make_dir_exist
+from yolov3_wizyoung.utils.misc_utils import reset_dir
 
 def parse_hyperparams(hyperparam_config_file):
     with open(hyperparam_config_file) as f:
@@ -63,8 +64,12 @@ if __name__ == '__main__':
         yolo_args.save_dir = new_save_dir
         yolo_args.log_dir = new_log_dir
         yolo_args.progress_log_path = os.path.join(new_log_dir, 'progress.log')
-        make_dir_exist(new_save_dir)
-        make_dir_exist(new_log_dir)
+        yolo_args.summary_path = os.path.join(new_log_dir, 'summary.json')
+        reset_dir(new_save_dir)
+        reset_dir(new_log_dir)
 
+        # use and close processes to force TensorFlow to release GPU memory
         print('Training hyperparameters: {}'.format(param_combo))
-        train(yolo_args)
+        p = multiprocessing.Process(target=train, args=(yolo_args,))
+        p.start()
+        p.join()
