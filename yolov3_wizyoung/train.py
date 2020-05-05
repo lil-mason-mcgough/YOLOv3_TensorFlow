@@ -174,7 +174,7 @@ def train(args):
                             'Gradient exploded! Please train again and you may need modify some parameters.')
 
             # NOTE: this is just demo. You can set the conditions when to save the weights.
-            if epoch % args.save_epoch == 0 and epoch > 0:
+            if args.save_dir is not None and epoch % args.save_epoch == 0 and epoch > 0:
                 if loss_total.average <= 2.:
                     saver_to_save.save(
                         sess, 
@@ -221,7 +221,7 @@ def train(args):
                 print(info)
                 logging.info(info)
 
-                if mAP > best_mAP:
+                if args.save_dir is not None and mAP > best_mAP:
                     best_mAP = mAP
                     saver_best.save(
                         sess, 

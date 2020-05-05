@@ -12,7 +12,7 @@ REQUIRED_PACKAGES = [
 ]
 setup(
     name='yolov3-wizyoung',
-    version='0.1.0',
+    version='0.2.0',
     install_requires=REQUIRED_PACKAGES,
     packages=find_packages(),
     description='YOLO for LIL (based on https://github.com/wizyoung/YOLOv3_TensorFlow)'

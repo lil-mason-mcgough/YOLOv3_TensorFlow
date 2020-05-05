@@ -1,20 +1,20 @@
 ---
 # coding: utf-8
-# This file contains the parameter used in train.py
+# This file contains the parameters used in train.py
 
 
 
 ### Some paths
-train_file: './data/dewalt_escondido/train.txt' # The path of the training txt file.
-val_file: './data/dewalt_escondido/val.txt' # The path of the validation txt file.
-restore_path: './data/darknet_weights/yolov3.ckpt' # The path of the weights to restore.
-save_dir: './data/dewalt_escondido/models/20200410/checkpoint/' # The directory of the weights to save.
-log_dir: './data/dewalt_escondido/models/20200410/logs/' # The directory to store the tensorboard log files.
-progress_log_path: './data/dewalt_escondido/models/20200410/progress.log' # The path to record the training progress.
-class_name_path: './data/dewalt_escondido/data.names' # The path of the class names.
+train_file: './app_data/train.txt' # The path of the training txt file.
+val_file: './app_data/val.txt' # The path of the validation txt file.
+restore_path: './app_model/yolov3.ckpt' # The path of the weights to restore.
+save_dir: './app_model/save' # The directory of the weights to save (set to None to disable).
+log_dir: './app_model/logs' # The directory to store the tensorboard log files.
+progress_log_path: './app_model/logs/progress.log' # The path to record the training progress.
+class_name_path: './app_data/classes.names' # The path of the class names.
 anchors: [[5,8], [8,11], [12,16], [25,21], [30,34], [40,26], [49,44], [83,68], [162,127]]
 
-### Training releated numbers
+### Training related numbers
 batch_size: 6
 img_size: [416, 416] # Images will be resized to `img_size` and fed to the network, size format: [width, height]
 letterbox_resize: True # Whether to use the letterbox resize, i.e., keep the original aspect ratio in the resized image.
@@ -30,24 +30,12 @@ global_step: 0 # used when resuming training
 num_threads: 10 # Number of threads for image processing used in tf.data pipeline.
 prefetech_buffer: 5 # Prefetech_buffer used in tf.data pipeline.
 
-# ### Learning rate and optimizer
-# optimizer_name = 'momentum'  # Chosen from [sgd, momentum, adam, rmsprop]
-# save_optimizer = True  # Whether to save the optimizer parameters into the checkpoint file.
-# learning_rate_init = 1e-4
-# lr_type = 'piecewise'  # Chosen from [fixed, exponential, cosine_decay, cosine_decay_restart, piecewise]
-# lr_decay_epoch = 5  # Epochs after which learning rate decays. Int or float. Used when chosen `exponential` and `cosine_decay_restart` lr_type.
-# lr_decay_factor = 0.96  # The learning rate decay factor. Used when chosen `exponential` lr_type.
-# lr_lower_bound = 1e-6  # The minimum learning rate.
-# # only used in piecewise lr type
-# pw_boundaries = [30, 50]  # epoch based boundaries
-# pw_values = [learning_rate_init, 3e-5, 1e-5]
-
 ### Learning rate and optimizer
 optimizer_name: 'adam' # Chosen from [sgd, momentum, adam, rmsprop]
 save_optimizer: True # Whether to save the optimizer parameters into the checkpoint file.
 learning_rate_init: 1e-4
-lr_type: 'piecewise' # Chosen from [fixed, exponential, cosine_decay, cosine_decay_restart, piecewise]
-lr_decay_epoch: 5 # Epochs after which learning rate decays. Int or float. Used when chosen `exponential` and `cosine_decay_restart` lr_type.
+lr_type: 'exponential' # Chosen from [fixed, exponential, cosine_decay, cosine_decay_restart, piecewise]
+lr_decay_epoch: 1 # Epochs after which learning rate decays. Int or float. Used when chosen `exponential` and `cosine_decay_restart` lr_type.
 lr_decay_factor: 0.96 # The learning rate decay factor. Used when chosen `exponential` lr_type.
 lr_lower_bound: 1e-6 # The minimum learning rate.
 # only used in piecewise lr type
@@ -76,6 +64,7 @@ use_focal_loss: True # Whether to apply focal loss on the conf loss.
 use_mix_up: True # Whether to use mix up data augmentation strategy.
 use_warm_up: True # whether to use warm up strategy to prevent from gradient exploding.
 warm_up_epoch: 3 # Warm up training epoches. Set to a larger value if gradient explodes.
+freeze_features: True # Whether to make feature extraction layers untrainable.
 
 ### some constants in validation
 # nms

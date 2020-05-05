@@ -4,34 +4,12 @@ import subprocess
 from yolov3_wizyoung.train import train
 from yolov3_wizyoung.labels.convert_labels import convert_kitti_data_to_yolo, convert_makesense_data_to_yolo
 from yolov3_wizyoung.utils.config_utils import YoloArgs
-
-def make_dir_exist(dirname):
-    try:
-        os.makedirs(dirname)
-    except (OSError, FileExistsError):
-        pass
-
-def make_dir_not_exist(dirname):
-    try:
-        shutil.rmtree(dirname)
-    except FileNotFoundError:
-        pass
-
-def gsutil_rsync(src_dir, dst_dir):
-    command = ['gsutil', '-m', 'rsync', '-r', src_dir, dst_dir]
-    print('Executing command:')
-    print(' '.join(command))
-
-    process = subprocess.run(command,
-                         stdout=subprocess.PIPE,
-                         universal_newlines=True)
-    print(process.stdout)
-    return process
+from yolov3_wizyoung.utils.misc_utils import make_dir_exist, reset_dir, gsutil_rsync
 
 
 if __name__ == '__main__':
     import argparse
-    parser = argparse.ArgumentParser(description="YOLO-V3 train procedure.")
+    parser = argparse.ArgumentParser(description="YOLOV3 train procedure.")
     parser.add_argument("--job-dir", type=str, default="",
                     help="The directory of cloud resources for this job.")
     parser.add_argument("--config_file", type=str, default="./config.yaml",
@@ -91,10 +69,8 @@ if __name__ == '__main__':
                     f_out.write(l_in)
 
     # reset checkpoint and logs dirs
-    make_dir_not_exist(yolo_args.save_dir)
-    make_dir_exist(yolo_args.save_dir)
-    make_dir_not_exist(yolo_args.log_dir)
-    make_dir_exist(yolo_args.log_dir)
+    reset_dir(yolo_args.save_dir)
+    reset_dir(yolo_args.log_dir)
 
     # train model
     train(yolo_args)

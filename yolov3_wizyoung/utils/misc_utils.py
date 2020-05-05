@@ -1,6 +1,9 @@
 # coding: utf-8
 
 import random
+import os
+import shutil
+import subprocess
 
 import numpy as np
 import tensorflow as tf
@@ -160,3 +163,30 @@ def config_optimizer(optimizer_name, learning_rate, decay=0.9, momentum=0.9):
         return tf.train.GradientDescentOptimizer(learning_rate)
     else:
         raise ValueError('Unsupported optimizer type!')
+
+def make_dir_exist(dirname):
+    try:
+        os.makedirs(dirname)
+    except (OSError, FileExistsError):
+        pass
+
+def make_dir_not_exist(dirname):
+    try:
+        shutil.rmtree(dirname)
+    except FileNotFoundError:
+        pass
+
+def reset_dir(dirname):
+    make_dir_not_exist(dirname)
+    make_dir_exist(dirname)
+
+def gsutil_rsync(src_dir, dst_dir):
+    command = ['gsutil', '-m', 'rsync', '-r', src_dir, dst_dir]
+    print('Executing command:')
+    print(' '.join(command))
+
+    process = subprocess.run(command,
+                         stdout=subprocess.PIPE,
+                         universal_newlines=True)
+    print(process.stdout)
+    return process
