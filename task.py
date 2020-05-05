@@ -18,11 +18,11 @@ if __name__ == '__main__':
                     help="The bucket name of cloud resources.")
     parser.add_argument("--data_prefix", type=str, default="product_detection/data/kitti_dewalt_escondido",
                     help="The path to bucket training data dir relative to the bucket root.")
-    parser.add_argument("--data_dl_dir", type=str, default="./app_data",
+    parser.add_argument("--data_dl_dir", type=str, default="../app_data",
                     help="The local directory to save bucket training data.")
     parser.add_argument("--model_prefix", type=str, default="product_detection/models/darknet_weights",
                     help="The path to bucket model dir relative to the bucket root.")
-    parser.add_argument("--model_dl_dir", type=str, default="./app_model",
+    parser.add_argument("--model_dl_dir", type=str, default="../app_model",
                     help="The the local directory to save model data.")
     parser.add_argument("--use_real_train_data", type=bool, default=False,
                     help="If True, add real training data in training_syn_+_real folder.")

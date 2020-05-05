@@ -21,6 +21,11 @@ class YoloArgs(object):
         'eval_threshold'
     ]
 
+    def recompute(self):
+        self.train_batch_num = int(math.ceil(float(self.train_img_cnt) / self.batch_size))
+        self.lr_decay_freq = int(self.train_batch_num * self.lr_decay_epoch)
+        self.pw_boundaries = [float(i) * self.train_batch_num + self.global_step for i in self.pw_boundaries]
+
     def __init__(self, conf_path):
         with open(conf_path) as f:
             args_dict = yaml.load(f, Loader=yaml.FullLoader)
@@ -40,10 +45,7 @@ class YoloArgs(object):
         args_dict['class_num'] = len(args_dict['classes'])
         args_dict['train_img_cnt'] = len(open(args_dict['train_file'], 'r').readlines())
         args_dict['val_img_cnt'] = len(open(args_dict['val_file'], 'r').readlines())
-        args_dict['train_batch_num'] = int(math.ceil(float(args_dict['train_img_cnt']) / args_dict['batch_size']))
-
-        args_dict['lr_decay_freq'] = int(args_dict['train_batch_num'] * args_dict['lr_decay_epoch'])
-        args_dict['pw_boundaries'] = [float(i) * args_dict['train_batch_num'] + args_dict['global_step'] for i in args_dict['pw_boundaries']]
 
         for key, val in args_dict.items():
             self.__setattr__(key, val)
+        self.recompute()

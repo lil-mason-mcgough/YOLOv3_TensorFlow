@@ -53,6 +53,7 @@ if __name__ == '__main__':
     for param_combo in param_combos:
         for p, v in param_combo.items():
             yolo_args.__setattr__(p, v)
+            yolo_args.recompute()
 
         params_string = '--'.join(['{}-{}'.format(k, v) for k, v in param_combo.items()])
 
