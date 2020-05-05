@@ -12,6 +12,7 @@ save_dir: './app_model/save' # The directory of the weights to save (set to None
 log_dir: './app_model/logs' # The directory to store the tensorboard log files.
 progress_log_path: './app_model/logs/progress.log' # The path to record the training progress.
 class_name_path: './app_data/classes.names' # The path of the class names.
+summary_path: './app_model/logs/summary.json' # The path to file summarizing losses at each epoch.
 anchors: [[5,8], [8,11], [12,16], [25,21], [30,34], [40,26], [49,44], [83,68], [162,127]]
 
 ### Training related numbers

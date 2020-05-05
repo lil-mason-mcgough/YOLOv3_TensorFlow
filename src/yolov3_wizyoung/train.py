@@ -3,6 +3,7 @@
 from __future__ import division, print_function
 
 import os
+import json
 
 import tensorflow as tf
 import numpy as np
@@ -130,10 +131,9 @@ def train(args):
 
         print('\n----------- start to train -----------\n')
 
+        summary_data = {'train': [], 'val': []}
         best_mAP = -np.Inf
-
         for epoch in range(args.total_epoches):
-
             sess.run(train_init_op)
             loss_total, loss_xy, loss_wh, loss_conf, loss_class = AverageMeter(), AverageMeter(), AverageMeter(), AverageMeter(), AverageMeter()
 
@@ -180,6 +180,14 @@ def train(args):
                         sess, 
                         os.path.join(args.save_dir, 'model-epoch_{}_step_{}_loss_{:.4f}_lr_{:.5g}'.format(
                             epoch, int(__global_step), loss_total.average, __lr)))
+
+            summary_data['train'].append({
+                'epoch': epoch,
+                'loss_total': loss_total.average, 
+                'loss_xy': loss_xy.average, 
+                'loss_wh': loss_wh.average, 
+                'loss_conf': loss_conf.average, 
+                'loss_class': loss_class.average})
 
             # switch to validation dataset for evaluation
             if epoch % args.val_evaluation_epoch == 0 and epoch >= args.warm_up_epoch:
@@ -236,6 +244,18 @@ def train(args):
                 writer.add_summary(make_summary('validation_statistics/loss_wh', val_loss_wh.average), global_step=epoch)
                 writer.add_summary(make_summary('validation_statistics/loss_conf', val_loss_conf.average), global_step=epoch)
                 writer.add_summary(make_summary('validation_statistics/loss_class', val_loss_class.average), global_step=epoch)
+            
+                summary_data['val'].append({
+                    'epoch': epoch,
+                    'val_loss_total': val_loss_total.average, 
+                    'val_loss_xy': val_loss_xy.average, 
+                    'val_loss_wh': val_loss_wh.average, 
+                    'val_loss_conf': val_loss_conf.average, 
+                    'val_loss_class': val_loss_class.average})
+        with open(args.summary_path, 'w') as f:
+            json.dump(summary_data, f)
+
+
 
 
 if __name__ == '__main__':

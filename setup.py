@@ -1,4 +1,4 @@
-from setuptools import find_packages
+from setuptools import find_namespace_packages
 from setuptools import setup
 
 REQUIRED_PACKAGES = [
@@ -14,6 +14,7 @@ setup(
     name='yolov3-wizyoung',
     version='0.2.0',
     install_requires=REQUIRED_PACKAGES,
-    packages=find_packages(),
+    package_dir={'': 'src'},
+    packages=find_namespace_packages(where='src'),
     description='YOLO for LIL (based on https://github.com/wizyoung/YOLOv3_TensorFlow)'
 )
