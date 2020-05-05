@@ -6,6 +6,31 @@ from yolov3_wizyoung.labels.convert_labels import convert_kitti_data_to_yolo, co
 from yolov3_wizyoung.utils.config_utils import YoloArgs
 from yolov3_wizyoung.utils.misc_utils import make_dir_exist, reset_dir, gsutil_rsync
 
+def prime_dataset_paths(data_dir, classes):
+    # generate new training paths from data
+    data_subsets = {'training_syn_+_real': 'train', 'validation': 'val'}
+    convert_kitti_data_to_yolo(data_dir, data_dir, data_subsets=data_subsets)
+
+    # generate test data
+    convert_makesense_data_to_yolo(
+        os.path.join(data_dir, 'testing_real_half', 'image_2'),
+        os.path.join(data_dir, 'testing_real_half', 'labels_dewalt_escondido_subset'),
+        classes,
+        os.path.join(data_dir, 'test.txt'))
+
+    # append real training imgs to list
+    if parsed_args.use_real_train_data:
+        syn_data_path = os.path.join(data_dir, 'train_syn.txt')
+        convert_makesense_data_to_yolo(
+            os.path.join(data_dir, 'training_syn_+_real', 'makesense_images'), 
+            os.path.join(data_dir, 'training_syn_+_real', 'makesense_labels'), 
+            classes, 
+            syn_data_path)
+        with open(os.path.join(data_dir, 'train.txt'), 'a') as f_out:
+            with open(syn_data_path, 'r') as f_in:
+                for l_in in f_in:
+                    f_out.write(l_in)
+
 
 if __name__ == '__main__':
     import argparse
@@ -41,32 +66,7 @@ if __name__ == '__main__':
         os.path.join('gs://' + parsed_args.bucket_name, parsed_args.model_prefix), 
         parsed_args.model_dl_dir)
 
-    # generate new training paths from data
-    data_subsets = {'training_syn_+_real': 'train', 'validation': 'val'}
-    convert_kitti_data_to_yolo(
-        parsed_args.data_dl_dir,
-        parsed_args.data_dl_dir,
-        data_subsets=data_subsets)
-
-    # generate test data
-    convert_makesense_data_to_yolo(
-        os.path.join(parsed_args.data_dl_dir, 'testing_real_half', 'image_2'),
-        os.path.join(parsed_args.data_dl_dir, 'testing_real_half', 'labels_dewalt_escondido_subset'),
-        yolo_args.classes,
-        os.path.join(parsed_args.data_dl_dir, 'test.txt'))
-
-    # append real training imgs to list
-    if parsed_args.use_real_train_data:
-        syn_data_path = os.path.join(parsed_args.data_dl_dir, 'train_syn.txt')
-        convert_makesense_data_to_yolo(
-            os.path.join(parsed_args.data_dl_dir, 'training_syn_+_real', 'makesense_images'), 
-            os.path.join(parsed_args.data_dl_dir, 'training_syn_+_real', 'makesense_labels'), 
-            yolo_args.classes, 
-            syn_data_path)
-        with open(os.path.join(parsed_args.data_dl_dir, 'train.txt'), 'a') as f_out:
-            with open(syn_data_path, 'r') as f_in:
-                for l_in in f_in:
-                    f_out.write(l_in)
+    prime_dataset_paths(parsed_args.data_dl_dir, yolo_args.classes)
 
     # reset checkpoint and logs dirs
     reset_dir(yolo_args.save_dir)
