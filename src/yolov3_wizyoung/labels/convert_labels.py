@@ -22,53 +22,38 @@ def read_class_names(class_names_path):
         'Duplicate class names in {}.'.format(class_names_path)
     return class_names
 
-def convert_kitti_data_to_yolo(kitti_dataset_dir, yolo_output_dir, data_subsets=None):
-    if data_subsets is None:
-        data_subsets = {'training': 'train', 'validation': 'val', 'testing': 'test'}
-    # make output paths
-    os.makedirs(yolo_output_dir, exist_ok=True)
+def convert_kitti_data_to_yolo(imgs_dir, labels_dir, output_data_path, class_names):
+    print('Writing file: {}'.format(output_data_path))
 
     # get class names
-    class_names_path = os.path.join(kitti_dataset_dir, 'classes.names')
-    class_names = read_class_names(class_names_path)
     class_idxs = {name: idx for idx, name in enumerate(class_names)}
 
-    # write class names to new classes file
-    with open(os.path.join(yolo_output_dir, 'data.names'), 'w') as f:
-        for l in class_names:
-            f.write(l + '\n')
-
     # parse bounding boxes from kitti format
-    for data_subset, out_data_subset in data_subsets.items():
-        label_dir = os.path.join(kitti_dataset_dir, data_subset, 'label_2')
-        label_paths = glob(os.path.join(label_dir, '*' + LABEL_EXT))
-        if not len(label_paths) > 0:
-            warn('No labels found in {}'.format(label_dir))
-        
-        output_data_path = os.path.join(yolo_output_dir, 
-            '{}{}'.format(out_data_subset, LABEL_EXT))
-        with open(output_data_path, 'w') as f_out:
-            print('Writing file: {}'.format(output_data_path))
-            for i, label_path in enumerate(label_paths):
-                # get detections part of line
-                with open(label_path, 'r') as f_in:
-                    detections = []
-                    for l_in in f_in:
-                        pl = l_in.split(' ')
-                        class_idx = str(class_idxs[pl[0]])
-                        bbox = list(map(lambda x: str(int(round(float(x)))), 
-                            [pl[4], pl[5], pl[6], pl[7]]))
-                        detection_str = ' '.join([class_idx] + bbox)
-                        detections.append(detection_str)
+    label_paths = glob(os.path.join(labels_dir, '*' + LABEL_EXT))
+    if not len(label_paths) > 0:
+        warn('No labels found in {}'.format(labels_dir))
+    
+    with open(output_data_path, 'w') as f_out:
+        for i, label_path in enumerate(label_paths):
+            # get detections part of line
+            with open(label_path, 'r') as f_in:
+                detections = []
+                for l_in in f_in:
+                    pl = l_in.split(' ')
+                    class_idx = str(class_idxs[pl[0]])
+                    bbox = list(map(lambda x: str(int(round(float(x)))), 
+                        [pl[4], pl[5], pl[6], pl[7]]))
+                    detection_str = ' '.join([class_idx] + bbox)
+                    detections.append(detection_str)
 
-                # get image part of line
-                img_name = os.path.splitext(os.path.basename(label_path))[0] + IMG_EXT
-                img_path = os.path.join(kitti_dataset_dir, data_subset, 'image_2', img_name)
+            # get image part of line
+            img_name = os.path.splitext(os.path.basename(label_path))[0] + IMG_EXT
+            img_path = os.path.join(imgs_dir, img_name)
 
-                line = _write_bbox_line(img_path, label_path, i, detections)
-                if len(line.split(' ')) < 9:
-                    continue
-                f_out.write(line + '\n')
+            line = _write_bbox_line(img_path, label_path, i, detections)
+            if len(line.split(' ')) < 9:
+                continue
+            f_out.write(line + '\n')
 
 def convert_makesense_data_to_yolo(imgs_dir, labels_dir, class_names, output_file):
     img_paths = glob(os.path.join(imgs_dir, '*' + IMG_EXT))
