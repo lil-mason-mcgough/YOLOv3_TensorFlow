@@ -132,24 +132,3 @@ def get_kmeans(anno, cluster_num=9):
     anchors = sorted(anchors, key=lambda x: x[0] * x[1])
 
     return anchors, ave_iou
-
-
-if __name__ == '__main__':
-    # target resize format: [width, height]
-    # if target_resize is speficied, the anchors are on the resized image scale
-    # if target_resize is set to None, the anchors are on the original image scale
-    target_size = [416, 416]
-    annotation_path = './data/dewalt_escondido/train.txt'
-    anno_result = parse_anno(annotation_path, target_size=target_size)
-    anchors, ave_iou = get_kmeans(anno_result, 9)
-
-    anchor_string = ''
-    for anchor in anchors:
-        anchor_string += '{},{}, '.format(anchor[0], anchor[1])
-    anchor_string = anchor_string[:-2]
-
-    print('anchors are:')
-    print(anchor_string)
-    print('the average iou is:')
-    print(ave_iou)
-

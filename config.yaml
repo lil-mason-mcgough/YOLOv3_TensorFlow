@@ -13,7 +13,7 @@ log_dir: '../app_model/logs' # The directory to store the tensorboard log files.
 progress_log_path: '../app_model/logs/progress.log' # The path to record the training progress.
 summary_path: '../app_model/logs/summary.json' # The path to file summarizing losses at each epoch.
 class_name_path: '../app_data/classes.names' # The path of the class names.
-anchors: [[5,8], [8,11], [12,16], [25,21], [30,34], [40,26], [49,44], [83,68], [162,127]]
+anchors: [[8, 15], [16, 21], [29, 33], [53, 24], [43, 49], [67, 42], [59, 74], [123, 67], [140, 115]]
 
 ### Training related numbers
 batch_size: 32
