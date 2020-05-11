@@ -67,13 +67,13 @@ if __name__ == '__main__':
     # load configs
     yolo_args = YoloArgs(parsed_args.config_file)
 
-    # # reset checkpoint and logs dirs
-    # reset_dir(yolo_args.save_dir)
-    # reset_dir(yolo_args.log_dir)
+    # reset checkpoint and logs dirs
+    reset_dir(yolo_args.save_dir)
+    reset_dir(yolo_args.log_dir)
 
-    # # train model
-    # train(yolo_args)
-    # if parsed_args.job_dir == '':
-    #     parsed_args.job_dir = 'gs://{}'.format(parsed_args.bucket_name)
-    # gsutil_rsync(yolo_args.save_dir, os.path.join(parsed_args.job_dir, 'checkpoint'))
-    # gsutil_rsync(yolo_args.log_dir, os.path.join(parsed_args.job_dir, 'logs'))
+    # train model
+    train(yolo_args)
+    if parsed_args.job_dir == '':
+        parsed_args.job_dir = 'gs://{}'.format(parsed_args.bucket_name)
+    gsutil_rsync(yolo_args.save_dir, os.path.join(parsed_args.job_dir, 'checkpoint'))
+    gsutil_rsync(yolo_args.log_dir, os.path.join(parsed_args.job_dir, 'logs'))
