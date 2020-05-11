@@ -34,35 +34,41 @@ if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser(description="YOLOV3 train procedure.")
     parser.add_argument("--job-dir", type=str, default="",
-                    help="The directory of cloud resources for this job.")
+        help="The directory of cloud resources for this job.")
     parser.add_argument("--config_file", type=str, default="./config.yaml",
-                    help="The path of the yaml configuration file.")
+        help="The path of the yaml configuration file.")
+    parser.add_argument("--use_gcs_data", type=bool, default=False,
+        help="If true, download training data from GCS before training.")
     parser.add_argument("--bucket_name", type=str, default="lil-ml",
-                    help="The bucket name of cloud resources.")
+        help="The bucket name containing data on GCS (i.e. gs://<bucket_name>).")
     parser.add_argument("--data_prefix", type=str, default="product_detection/data/kitti_dewalt_escondido",
-                    help="The path to bucket training data dir relative to the bucket root.")
-    parser.add_argument("--data_dl_dir", type=str, default="../app_data",
-                    help="The local directory to save bucket training data.")
+        help="The path to bucket training data dir relative to gs://<bucket_name>. Ignored if <use_gcs_data> set to False.")
+    parser.add_argument("--local_data_dir", type=str, default="../app_data",
+        help="The local directory containing training data.")
     parser.add_argument("--model_prefix", type=str, default="product_detection/models/darknet_weights",
-                    help="The path to bucket model dir relative to the bucket root.")
+        help="The path to bucket model dir relative to gs://<bucket_name>.")
     parser.add_argument("--model_dl_dir", type=str, default="../app_model",
-                    help="The the local directory to save model data.")
+        help="The the local directory to save model data.")
     parsed_args = parser.parse_args()
 
-    # download data and pretrained model from GCS
-    make_dir_exist(parsed_args.data_dl_dir)
-    data_source_url = os.path.join('gs://' + parsed_args.bucket_name, parsed_args.data_prefix)
-    gsutil_rsync(data_source_url, parsed_args.data_dl_dir)
+    # download data from GCS
+    if parsed_args.use_gcs_data:
+        make_dir_exist(parsed_args.local_data_dir)
+        data_source_url = os.path.join('gs://' + parsed_args.bucket_name, parsed_args.data_prefix)
+        gsutil_rsync(data_source_url, parsed_args.local_data_dir)
+
+    # download pretrained model from GCS
     make_dir_exist(parsed_args.model_dl_dir)
     model_source_url = os.path.join('gs://' + parsed_args.bucket_name, parsed_args.model_prefix)
     gsutil_rsync(model_source_url, parsed_args.model_dl_dir)
 
+    # create files listing paths to data
     data_subsets = {
-        os.path.join(parsed_args.data_dl_dir, 'training'): 'train.txt', 
-        os.path.join(parsed_args.data_dl_dir, 'validation'): 'val.txt',
-        os.path.join(parsed_args.data_dl_dir, 'testing'): 'test.txt'}
-    classes = read_class_names(os.path.join(parsed_args.data_dl_dir, 'classes.names'))
-    prime_dataset_paths(data_subsets, parsed_args.data_dl_dir, classes)
+        os.path.join(parsed_args.local_data_dir, 'training'): 'train.txt', 
+        os.path.join(parsed_args.local_data_dir, 'validation'): 'val.txt',
+        os.path.join(parsed_args.local_data_dir, 'testing'): 'test.txt'}
+    classes = read_class_names(os.path.join(parsed_args.local_data_dir, 'classes.names'))
+    prime_dataset_paths(data_subsets, parsed_args.local_data_dir, classes)
 
     # load configs
     yolo_args = YoloArgs(parsed_args.config_file)
