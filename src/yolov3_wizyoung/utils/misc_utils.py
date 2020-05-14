@@ -190,3 +190,14 @@ def gsutil_rsync(src_dir, dst_dir):
                          universal_newlines=True)
     print(process.stdout)
     return process
+
+def gsutil_cp(src_path, dst_path):
+    command = ['gsutil', 'cp', src_path, dst_path]
+    print('Executing command:')
+    print(' '.join(command))
+
+    process = subprocess.run(command,
+                         stdout=subprocess.PIPE,
+                         universal_newlines=True)
+    print(process.stdout)
+    return process

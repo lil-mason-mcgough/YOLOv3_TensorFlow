@@ -4,7 +4,7 @@ import subprocess
 from yolov3_wizyoung.train import train
 from yolov3_wizyoung.labels.convert_labels import read_class_names, convert_kitti_data_to_yolo, convert_makesense_data_to_yolo
 from yolov3_wizyoung.utils.config_utils import YoloArgs
-from yolov3_wizyoung.utils.misc_utils import make_dir_exist, reset_dir, gsutil_rsync
+from yolov3_wizyoung.utils.misc_utils import make_dir_exist, reset_dir, gsutil_rsync, gsutil_cp
 
 def prime_dataset_paths(data_subsets, output_data_dir, classes):
     os.makedirs(output_data_dir, exist_ok=True)
@@ -83,3 +83,4 @@ if __name__ == '__main__':
         parsed_args.job_dir = 'gs://{}'.format(parsed_args.bucket_name)
     gsutil_rsync(yolo_args.save_dir, os.path.join(parsed_args.job_dir, 'checkpoint'))
     gsutil_rsync(yolo_args.log_dir, os.path.join(parsed_args.job_dir, 'logs'))
+    gsutil_cp(parsed_args.config_file, parsed_args.job_dir)
