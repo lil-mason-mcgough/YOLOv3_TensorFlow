@@ -16,12 +16,12 @@ class_name_path: '../app_data/classes.names' # The path of the class names.
 anchors: [[8, 15], [16, 21], [29, 33], [53, 24], [43, 49], [67, 42], [59, 74], [123, 67], [140, 115]]
 
 ### Training related numbers
-batch_size: 6
+batch_size: 32
 img_size: [416, 416] # Images will be resized to `img_size` and fed to the network, size format: [width, height]
 letterbox_resize: True # Whether to use the letterbox resize, i.e., keep the original aspect ratio in the resized image.
-total_epoches: 1
+total_epoches: 300
 train_evaluation_step: 100 # Evaluate on the training batch after some steps.
-val_evaluation_epoch: 2 # Evaluate on the whole validation dataset after some epochs. Set to None to evaluate every epoch.
+val_evaluation_epoch: 1 # Evaluate on the whole validation dataset after some epochs. Set to None to evaluate every epoch.
 save_epoch: 10 # Save the model after some epochs.
 batch_norm_decay: 0.99 # decay in bn ops
 weight_decay: 5e-4 # l2 weight decay
@@ -37,7 +37,7 @@ save_optimizer: True # Whether to save the optimizer parameters into the checkpo
 learning_rate_init: 1e-4
 lr_type: 'exponential' # Chosen from [fixed, exponential, cosine_decay, cosine_decay_restart, piecewise]
 lr_decay_epoch: 1 # Epochs after which learning rate decays. Int or float. Used when chosen `exponential` and `cosine_decay_restart` lr_type.
-lr_decay_factor: 0.96 # The learning rate decay factor. Used when chosen `exponential` lr_type.
+lr_decay_factor: 0.98 # The learning rate decay factor. Used when chosen `exponential` lr_type.
 lr_lower_bound: 1e-6 # The minimum learning rate.
 # only used in piecewise lr type
 pw_boundaries: [30, 50] # epoch based boundaries
