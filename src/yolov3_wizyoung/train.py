@@ -175,11 +175,10 @@ def train(args):
 
             # NOTE: this is just demo. You can set the conditions when to save the weights.
             if args.save_dir is not None and epoch % args.save_epoch == 0 and epoch > 0:
-                if loss_total.average <= 2.:
-                    saver_to_save.save(
-                        sess, 
-                        os.path.join(args.save_dir, 'model-epoch_{}_step_{}_loss_{:.4f}_lr_{:.5g}'.format(
-                            epoch, int(__global_step), loss_total.average, __lr)))
+                saver_to_save.save(
+                    sess,
+                    os.path.join(args.save_dir, 'model-epoch_{}_step_{}_loss_{:.4f}_lr_{:.5g}'.format(
+                        epoch, int(__global_step), loss_total.average, __lr)))
 
             summary_data['train'].append({
                 'epoch': epoch,
