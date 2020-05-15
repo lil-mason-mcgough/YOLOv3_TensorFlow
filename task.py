@@ -38,13 +38,13 @@ if __name__ == '__main__':
     parser.add_argument("--config_file", type=str, default="./config.yaml",
         help="The path of the yaml configuration file.")
     parser.add_argument("--use_gcs_data", type=bool, default=False,
-        help="If true, download training data from GCS before training.")
+        help="If true, download training data and pretrained model from GCS before training.")
     parser.add_argument("--bucket_name", type=str, default="lil-ml",
         help="The bucket name containing data on GCS (i.e. gs://<bucket_name>).")
     parser.add_argument("--data_prefix", type=str, default="product_detection/data/kitti_dewalt_escondido",
         help="The path to bucket training data dir relative to gs://<bucket_name>. Ignored if <use_gcs_data> set to False.")
     parser.add_argument("--local_data_dir", type=str, default="../app_data",
-        help="The local directory containing training data.")
+        help="The local directory containing training data. If <use_gcs_data> set to True, copies remote data to this directory.")
     parser.add_argument("--model_prefix", type=str, default="product_detection/models/darknet_weights",
         help="The path to bucket model dir relative to gs://<bucket_name>.")
     parser.add_argument("--model_dl_dir", type=str, default="../app_model",
@@ -57,10 +57,10 @@ if __name__ == '__main__':
         data_source_url = os.path.join('gs://' + parsed_args.bucket_name, parsed_args.data_prefix)
         gsutil_rsync(data_source_url, parsed_args.local_data_dir)
 
-    # download pretrained model from GCS
-    make_dir_exist(parsed_args.model_dl_dir)
-    model_source_url = os.path.join('gs://' + parsed_args.bucket_name, parsed_args.model_prefix)
-    gsutil_rsync(model_source_url, parsed_args.model_dl_dir)
+        # download pretrained model from GCS
+        make_dir_exist(parsed_args.model_dl_dir)
+        model_source_url = os.path.join('gs://' + parsed_args.bucket_name, parsed_args.model_prefix)
+        gsutil_rsync(model_source_url, parsed_args.model_dl_dir)
 
     # create files listing paths to data
     data_subsets = {
