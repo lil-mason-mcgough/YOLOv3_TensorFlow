@@ -371,8 +371,7 @@ def voc_eval(gt_dict, val_preds, classidx, iou_thres=0.5, use_07_metric=False):
     try:
         BB = BB[sorted_ind, :]
     except:
-        print('no box, ignore')
-        return 1e-6, 1e-6, 0, 0, 0
+        return npos, 0, 0., 0., 0.
     img_ids = [img_ids[x] for x in sorted_ind]
 
     # 4. mark TPs and FPs
@@ -426,4 +425,5 @@ def voc_eval(gt_dict, val_preds, classidx, iou_thres=0.5, use_07_metric=False):
     ap = voc_ap(rec, prec, use_07_metric)
 
     # return rec, prec, ap
-    return npos, nd, tp[-1] / float(npos), tp[-1] / float(nd), ap
+    # return npos, nd, tp[-1] / float(npos), tp[-1] / float(nd), ap
+    return npos, nd, rec[-1], prec[-1], ap

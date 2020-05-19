@@ -123,13 +123,16 @@ with tf.Session() as sess:
 
     rec_total, prec_total, ap_total = AverageMeter(), AverageMeter(), AverageMeter()
     gt_dict = parse_gt_rec(args.eval_file, args.img_size, args.letterbox_resize)
+    # filter low confidence predictions
     print('mAP eval:')
     for ii in range(args.class_num):
+        class_name = args.classes[ii]
         npos, nd, rec, prec, ap = voc_eval(gt_dict, val_preds, ii, iou_thres=0.5, use_07_metric=args.use_voc_07_metric)
         rec_total.update(rec, npos)
         prec_total.update(prec, nd)
         ap_total.update(ap, 1)
-        print('Class {}: Recall: {:.4f}, Precision: {:.4f}, AP: {:.4f}'.format(ii, rec, prec, ap))
+        print('{:2d} - {:32s}: Recall: {:.4f}, Precision: {:.4f}, AP: {:.4f}, ({:4d} true, {:4d} pred)'.format(
+            ii, class_name, rec, prec, ap, npos, nd))
 
     mAP = ap_total.average
     print('final mAP: {:.4f}'.format(mAP))
