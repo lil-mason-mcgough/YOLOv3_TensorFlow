@@ -9,12 +9,11 @@ import tensorflow as tf
 import numpy as np
 import cv2
 
-from .utils.misc_utils import parse_anchors, read_class_names
-from .utils.nms_utils import gpu_nms
-from .utils.plot_utils import get_color_table, plot_one_box
-from .utils.data_aug import letterbox_resize
-
-from .model import yolov3
+from yolov3_wizyoung.utils.misc_utils import parse_anchors, read_class_names
+from yolov3_wizyoung.utils.nms_utils import gpu_nms
+from yolov3_wizyoung.utils.plot_utils import get_color_table, plot_one_box
+from yolov3_wizyoung.utils.data_aug import letterbox_resize
+from yolov3_wizyoung.model import yolov3
 
 parser = argparse.ArgumentParser(description="YOLO-V3 test single image test procedure.")
 parser.add_argument("input_pattern", type=str, help="The pattern for input images.")
