@@ -26,6 +26,29 @@ Unlike the original package which used `args.py` for training configuration para
 
 Data needs to be consumable in a specific format to be used by this project. That format is described in section 7.1 of the original documentation (below). Several helper scripts are in yolov3_wizyoung to help with various formats.
 
+There are some helper scripts to assist with converting the data from the NVIDIA ISAAC scene into the format described in section 7.1 of the original documentation. The `prepare_data.py` script simultaneously converts data that comes from the NVIDIA ISAAC scene and data that comes from makesense.io bounding box annotations into the format for this project. The input data to `prepare_data.py` must be stored in a directory either in GCS or on local file storage with the following structure:
+
+```
+classes.names
+training
++---image_2
++---labels_2
++---makesense_images
++---makesense_labels
+validation
++---image_2
++---labels_2
++---makesense_images
++---makesense_labels
+testing
++---image_2
++---labels_2
++---makesense_images
++---makesense_labels
+```
+
+The `image_2` and `labels_2` files are generated directly from the NVIDIA ISAAC scene. The `makesense_images` and `makesense_labels` files are hand-made annotations which come directly from makesense.io. Neither set of files is strictly necessary for `training`, `validation`, or `testing` folders, but they must come in pairs. The `prepare_data.py` script will optionally copy these files down to local storage, then combine the ISAAC and makesense.io images into `train.txt`, `val.txt`, and `test.txt` lists. Update the `config.yaml` file to point to these lists.
+
 ### Generate anchors
 
 When using your own data for YOLO, you probably want to generate your own anchors. This can be done using the following code, converting literals to reflect your project:
@@ -42,7 +65,7 @@ anchors, avg_iou = get_kmeans(anno_result, n_anchors)
 print(anchors)
 ```
 
-Copy the anchors as they appear in the console into `config.yaml` under the line `anchors: ...`.
+Copy the anchors as they appear in the console into `config.yaml` under the line `anchors: ...`. You can also use the `calculate_anchors.py` script.
 
 ### Download Darknet weights
 
@@ -74,6 +97,10 @@ config_file = 'config.yaml'
 args = YoloArgs(config_file)
 train(args)
 ```
+
+### Visualize results
+
+There are two scripts for validating and visualizing trained models. The first, `eval.py`, will calculate the recall, precision, and mAP of a model checkpoint against a testing dataset. The second script, `visualize.py`, will display the predicted bounding boxes, classes, and confidence scores for a test set of images and save them to a given directory. 
 
 ## Additional notes
 
