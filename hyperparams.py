@@ -7,10 +7,10 @@ from yolov3_wizyoung.train import train
 from yolov3_wizyoung.utils.config_utils import YoloArgs
 from yolov3_wizyoung.utils.misc_utils import reset_dir
 
+
 def parse_hyperparams(hyperparam_config_file):
     with open(hyperparam_config_file) as f:
         return yaml.load(f, Loader=yaml.FullLoader)
-
 
 def eval_hyperparams(hyperparams):
     def _eval_hyperparams(hyperparams, all_params, select_params=None):
@@ -35,8 +35,12 @@ def eval_hyperparams(hyperparams):
     return all_params
 
 
-
 if __name__ == '__main__':
+    """
+    Note that this example applies a grid search strategy, which is not ideal 
+    in practice. Ideally apply a framework such as hyperopt or optuna.
+    """
+
     import argparse
     parser = argparse.ArgumentParser(description='YOLOV3 hyperparameter optimization')
     parser.add_argument("--config_file", type=str, default="./config.yaml",

@@ -4,5 +4,6 @@
 # The variable names listed here must match those in the accompanying config
 # file for this model.
 
-batch_size: [8, 16, 32, 64]
+batch_size: [8, 32, 128]
+learning_rate_init: [0.001, 0.0001, 0.00001]
 lr_decay_factor: [0.94, 0.96, 0.98]
