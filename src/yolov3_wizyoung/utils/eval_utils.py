@@ -140,7 +140,8 @@ def evaluate_on_cpu(y_pred, y_true, num_classes, calc_now=True, max_boxes=50, sc
         return true_positive_dict, true_labels_dict, pred_labels_dict
 
 
-def evaluate_on_gpu(sess, gpu_nms_op, pred_boxes_flag, pred_scores_flag, y_pred, y_true, num_classes, iou_thresh=0.5, calc_now=True):
+def evaluate_on_gpu(sess, gpu_nms_op, pred_boxes_flag, pred_scores_flag, y_pred, 
+    y_true, num_classes, iou_thresh=0.5, calc_now=True):
     '''
     Given y_pred and y_true of a batch of data, get the recall and precision of the current batch.
     This function will perform gpu operation on the GPU.

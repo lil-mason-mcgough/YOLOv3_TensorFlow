@@ -151,9 +151,10 @@ def train(args):
                 loss_class.update(__loss[4], len(__y_pred[0]))
 
                 if __global_step % args.train_evaluation_step == 0 and __global_step > 0:
-                    # recall, precision = evaluate_on_cpu(__y_pred, __y_true, args.class_num, args.nms_topk, args.score_threshold, args.nms_threshold)
-                    # recall, precision = evaluate_on_gpu(sess, gpu_nms_op, pred_boxes_flag, pred_scores_flag, __y_pred, __y_true, args.class_num, args.nms_threshold)
-                    true_positive_dict, true_labels_dict, pred_labels_dict = evaluate_on_gpu(sess, gpu_nms_op, pred_boxes_flag, pred_scores_flag, __y_pred, __y_true, args.class_num, args.nms_threshold, calc_now=False)
+                    true_positive_dict, true_labels_dict, pred_labels_dict = evaluate_on_gpu(
+                        sess, gpu_nms_op, pred_boxes_flag, pred_scores_flag, 
+                        __y_pred, __y_true, args.class_num, args.eval_threshold, 
+                        calc_now=False)
                     n_true_boxes = sum(true_labels_dict.values())
                     n_pred_boxes = sum(pred_labels_dict.values())
                     recall = calc_recall(true_positive_dict, true_labels_dict)
