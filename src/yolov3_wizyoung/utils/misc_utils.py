@@ -29,7 +29,10 @@ class AverageMeter(object):
         self.val = val
         self.sum += val * n
         self.count += n
-        self.average = self.sum / float(self.count)
+        if self.count == 0:
+            self.average = 0.0
+        else:
+            self.average = self.sum / float(self.count)
 
 
 def parse_anchors(anchor_path):
