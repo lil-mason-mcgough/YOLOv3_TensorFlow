@@ -365,52 +365,52 @@ def voc_eval(gt_dict, val_preds, classidx, iou_thres=0.5, use_07_metric=False):
     pred = [x for x in val_preds if x[-1] == classidx]
     img_ids = [x[0] for x in pred]
     confidence = np.array([x[-2] for x in pred])
-    BB = np.array([[x[1], x[2], x[3], x[4]] for x in pred])
+    pred_bboxes = np.array([[x[1], x[2], x[3], x[4]] for x in pred])
 
     # 3. sort by confidence
     sorted_ind = np.argsort(-confidence)
     try:
-        BB = BB[sorted_ind, :]
+        pred_bboxes = pred_bboxes[sorted_ind, :]
     except:
         return npos, 0, 0., 0., 0.
     img_ids = [img_ids[x] for x in sorted_ind]
 
     # 4. mark TPs and FPs
-    nd = len(img_ids)
-    tp = np.zeros(nd)
-    fp = np.zeros(nd)
-
-    for d in range(nd):
+    n_preds = len(img_ids)
+    tp = np.zeros(n_preds)
+    fp = np.zeros(n_preds)
+    # for every detected bounding box...
+    for d in range(n_preds):
         # all the gt info in some image
         R = class_recs[img_ids[d]]
-        bb = BB[d, :]
+        bb = pred_bboxes[d, :]
         ovmax = -np.Inf
-        BBGT = R['bbox']
+        gt_bboxes = R['bbox']
 
-        if BBGT.size > 0:
+        if gt_bboxes.size > 0:
             # calc iou
             # intersection
-            ixmin = np.maximum(BBGT[:, 0], bb[0])
-            iymin = np.maximum(BBGT[:, 1], bb[1])
-            ixmax = np.minimum(BBGT[:, 2], bb[2])
-            iymax = np.minimum(BBGT[:, 3], bb[3])
+            ixmin = np.maximum(gt_bboxes[:, 0], bb[0])
+            iymin = np.maximum(gt_bboxes[:, 1], bb[1])
+            ixmax = np.minimum(gt_bboxes[:, 2], bb[2])
+            iymax = np.minimum(gt_bboxes[:, 3], bb[3])
             iw = np.maximum(ixmax - ixmin + 1., 0.)
             ih = np.maximum(iymax - iymin + 1., 0.)
             inters = iw * ih
 
             # union
-            uni = ((bb[2] - bb[0] + 1.) * (bb[3] - bb[1] + 1.) + (BBGT[:, 2] - BBGT[:, 0] + 1.) * (
-                        BBGT[:, 3] - BBGT[:, 1] + 1.) - inters)
+            uni = ((bb[2] - bb[0] + 1.) * (bb[3] - bb[1] + 1.) + (gt_bboxes[:, 2] - gt_bboxes[:, 0] + 1.) * (
+                        gt_bboxes[:, 3] - gt_bboxes[:, 1] + 1.) - inters)
 
             overlaps = inters / uni
             ovmax = np.max(overlaps)
-            jmax = np.argmax(overlaps)
+            max_gt_idx = np.argmax(overlaps)
 
         if ovmax > iou_thres:
             # gt not matched yet
-            if not R['det'][jmax]:
+            if not R['det'][max_gt_idx]:
                 tp[d] = 1.
-                R['det'][jmax] = 1
+                R['det'][max_gt_idx] = 1
             else:
                 fp[d] = 1.
         else:
@@ -426,5 +426,5 @@ def voc_eval(gt_dict, val_preds, classidx, iou_thres=0.5, use_07_metric=False):
     ap = voc_ap(rec, prec, use_07_metric)
 
     # return rec, prec, ap
-    # return npos, nd, tp[-1] / float(npos), tp[-1] / float(nd), ap
-    return npos, nd, rec[-1], prec[-1], ap
+    # return npos, n_preds, tp[-1] / float(npos), tp[-1] / float(n_preds), ap
+    return npos, n_preds, rec[-1], prec[-1], ap

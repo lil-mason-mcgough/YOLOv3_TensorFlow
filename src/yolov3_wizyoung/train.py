@@ -212,7 +212,6 @@ def train(args):
                 # calc mAP
                 rec_total, prec_total, ap_total = AverageMeter(), AverageMeter(), AverageMeter()
                 gt_dict = parse_gt_rec(args.val_file, args.img_size, args.letterbox_resize)
-
                 info = '======> Epoch: {}, global_step: {}, lr: {:.6g} <======\n'.format(epoch, __global_step, __lr)
 
                 for ii in range(args.class_num):

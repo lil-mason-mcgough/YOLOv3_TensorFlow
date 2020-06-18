@@ -194,7 +194,7 @@ class yolov3(object):
         calc loss function from a certain scale
         input:
             feature_map_i: feature maps of a certain scale. shape: [N, 13, 13, 3*(5 + num_class)] etc.
-            y_true: y_ture from a certain scale. shape: [N, 13, 13, 3, 5 + num_class + 1] etc.
+            y_true: y_true from a certain scale. shape: [N, 13, 13, 3, 5 + num_class + 1] etc.
             anchors: shape [9, 2]
         '''
         
