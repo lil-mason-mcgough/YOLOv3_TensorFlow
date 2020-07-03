@@ -89,31 +89,32 @@ def evaluate(args):
             val_loss_class.update(__loss[4])
 
             # display output prediction
-            img_path = args.img_paths[__image_ids[0]]
-            img_ori = cv2.imread(img_path)
-            # rescale the coordinates to the original image
-            boxes_ = np.array([x[1:5] for x in pred_content], dtype=np.float32)
-            labels_ = np.array([x[-1] for x in pred_content], dtype=np.int64)
-            scores_ = np.array([x[-2] for x in pred_content], dtype=np.float32)
-            if len(boxes_) > 0:
-                if args.letterbox_resize:
-                    _, resize_ratio, dw, dh = letterbox_resize(img_ori, args.img_size[0], args.img_size[1])
-                    boxes_[:, [0, 2]] = (boxes_[:, [0, 2]] - dw) / resize_ratio
-                    boxes_[:, [1, 3]] = (boxes_[:, [1, 3]] - dh) / resize_ratio
-                else:
-                    height_ori, width_ori = img_ori.shape[:2]
-                    boxes_[:, [0, 2]] *= (width_ori / float(args.img_size[0]))
-                    boxes_[:, [1, 3]] *= (height_ori / float(args.img_size[1]))
+            if not args.get_roc:
+                img_path = args.img_paths[__image_ids[0]]
+                img_ori = cv2.imread(img_path)
+                # rescale the coordinates to the original image
+                boxes_ = np.array([x[1:5] for x in pred_content], dtype=np.float32)
+                labels_ = np.array([x[-1] for x in pred_content], dtype=np.int64)
+                scores_ = np.array([x[-2] for x in pred_content], dtype=np.float32)
+                if len(boxes_) > 0:
+                    if args.letterbox_resize:
+                        _, resize_ratio, dw, dh = letterbox_resize(img_ori, args.img_size[0], args.img_size[1])
+                        boxes_[:, [0, 2]] = (boxes_[:, [0, 2]] - dw) / resize_ratio
+                        boxes_[:, [1, 3]] = (boxes_[:, [1, 3]] - dh) / resize_ratio
+                    else:
+                        height_ori, width_ori = img_ori.shape[:2]
+                        boxes_[:, [0, 2]] *= (width_ori / float(args.img_size[0]))
+                        boxes_[:, [1, 3]] *= (height_ori / float(args.img_size[1]))
 
-            # save predictions to display image
-            for i in range(len(boxes_)):
-                x0, y0, x1, y1 = boxes_[i]
-                plot_one_box(img_ori, [x0, y0, x1, y1], 
-                    label=args.classes[labels_[i]] + ', {:.2f}%'.format(
-                        scores_[i] * 100), color=color_table[labels_[i]])
-            img_name = os.path.splitext(os.path.basename(img_path))[0]
-            output_path = os.path.join(args.output_dir, '{}.jpg'.format(img_name))
-            cv2.imwrite(output_path, img_ori)
+                # save predictions to display image
+                for i in range(len(boxes_)):
+                    x0, y0, x1, y1 = boxes_[i]
+                    plot_one_box(img_ori, [x0, y0, x1, y1], 
+                        label=args.classes[labels_[i]] + ', {:.2f}%'.format(
+                            scores_[i] * 100), color=color_table[labels_[i]])
+                img_name = os.path.splitext(os.path.basename(img_path))[0]
+                output_path = os.path.join(args.output_dir, '{}.jpg'.format(img_name))
+                cv2.imwrite(output_path, img_ori)
 
         rec_total, prec_total, ap_total = AverageMeter(), AverageMeter(), AverageMeter()
         gt_dict = parse_gt_rec(args.eval_file, args.img_size, 
@@ -206,14 +207,16 @@ if __name__ == '__main__':
             metrics.append(q.get())
             p.join()
 
-        recalls = [met['recall'] for met in metrics]
-        precisions = [met['precision'] for met in metrics]
+        recalls = [1.0] + [met['recall'] for met in metrics] + [0.0]
+        precisions = [0.0] + [met['precision'] for met in metrics] + [1.0]
+        mAPs = [met['mAP'] for met in metrics]
         print(recalls)
         print(precisions)
 
         noskill_line = np.linspace(0.0, 1.0, num=len(recalls))
         plt.plot(noskill_line, noskill_line[::-1], linestyle='--', color='b', label='No Skill')
-        plt.plot(recalls, precisions, color='r', marker='.', label='ROC')
+        plt.step(recalls, precisions, color='r', label='ROC')
+        plt.title('Precision-Recall Curve (AP: {})'.format(np.mean(mAPs)))
         plt.xlabel('Recall')
         plt.ylabel('Precision')
         plt.legend()
