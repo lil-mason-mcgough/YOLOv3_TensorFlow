@@ -36,7 +36,8 @@ def train(args):
     # tf.data pipeline
     ##################
     train_dataset = tf.data.TextLineDataset(args.train_file)
-    train_dataset = train_dataset.shuffle(args.train_img_cnt)
+    if args.shuffle:
+        train_dataset = train_dataset.shuffle(args.train_img_cnt)
     train_dataset = train_dataset.batch(args.batch_size)
     train_dataset = train_dataset.map(
         lambda x: tf.py_func(get_batch_data,
