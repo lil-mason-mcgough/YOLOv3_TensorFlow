@@ -15,14 +15,17 @@ if __name__ == '__main__':
         help="The path of the yaml configuration file.")
     parser.add_argument("--bucket_name", type=str, default="lil-ml",
         help="The bucket name containing data on GCS (i.e. gs://<bucket_name>).")
+    parser.add_argument("--reset_dirs", action="store_true",
+        help="If set, clears the save and log dirs before execution.")
     parsed_args = parser.parse_args()
 
     # load configs
     yolo_args = YoloArgs(parsed_args.config_file)
 
     # reset checkpoint and logs dirs
-    reset_dir(yolo_args.save_dir)
-    reset_dir(yolo_args.log_dir)
+    if parsed_args.reset_dirs:
+        reset_dir(yolo_args.save_dir)
+        reset_dir(yolo_args.log_dir)
 
     # train model
     train(yolo_args)
